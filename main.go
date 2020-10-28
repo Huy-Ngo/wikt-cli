@@ -9,6 +9,16 @@ import (
     "os"
 )
 
+type Entry struct {
+    PartOfSpeech string `json:"partOfSpeech"`
+    Language string `json::"language"`
+    Definitions []Definition `json:"definitions"`
+}
+
+type Definition struct {
+    Def string `json:"definition"`
+    examples []string `json:"examples"`
+}
 
 func main() {
     response, err := http.Get("https://en.wiktionary.org/api/rest_v1/page/definition/général")
