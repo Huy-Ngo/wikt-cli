@@ -20,26 +20,39 @@ type Definition struct {
     Examples []string `json:"examples"`
 }
 
+func ParseDefinitions(json []interface{}) (definitions []Definition) {
+    for _, value := range json {
+        var definition Definition
+        switch typ := value.(type) {
+        case map[string]interface{}:
+            definition.Def = typ["definition"].(string)
+            if typ["examples"] != nil {
+                definition.Examples = typ["examples"].([]string)
+            }
+        default:
+            fmt.Println("Some other type", value)
+        }
+        definitions = append(definitions, definition)
+    }
+    return
+}
+
 func ParseUsages(json map[string]interface{}) (usages []Usage) {
     for key, value := range json {
         var usage Usage
         switch typ := value.(type) {
         case []interface{}:
-            fmt.Println("Language:", key)
             for _, u := range typ {
-                fmt.Println("{")
                 switch v := u.(type) {
                 case map[string]interface{}:
                     usage.PartOfSpeech = v["partOfSpeech"].(string)
                     usage.Lang = v["language"].(string)
-                    usage.Definitions = nil
+                    usage.Definitions = ParseDefinitions(v["definitions"].([]interface{}))
                     fmt.Println(usage.PartOfSpeech)
                 default:
                     fmt.Println("Some other type", v)
                 }
-                fmt.Println("},")
             }
-            fmt.Println("]\n")
         default:
             fmt.Println(key, "is some other type")
         }
