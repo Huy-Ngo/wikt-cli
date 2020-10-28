@@ -11,17 +11,18 @@ import (
 
 type Usage struct {
     PartOfSpeech string `json:"partOfSpeech"`
-    Language string `json::"language"`
+    Lang string `json::"language"`
     Definitions []Definition `json:"definitions"`
 }
 
 type Definition struct {
     Def string `json:"definition"`
-    examples []string `json:"examples"`
+    Examples []string `json:"examples"`
 }
 
-func PrintJSON(json map[string]interface{}) {
+func ParseUsages(json map[string]interface{}) (usages []Usage) {
     for key, value := range json {
+        var usage Usage
         switch typ := value.(type) {
         case []interface{}:
             fmt.Println("Language:", key)
@@ -29,9 +30,10 @@ func PrintJSON(json map[string]interface{}) {
                 fmt.Println("{")
                 switch v := u.(type) {
                 case map[string]interface{}:
-                    fmt.Println(v["partOfSpeech"])
-                    fmt.Println(v["language"])
-                    fmt.Println(v["definitions"])
+                    usage.PartOfSpeech = v["partOfSpeech"].(string)
+                    usage.Lang = v["language"].(string)
+                    usage.Definitions = nil
+                    fmt.Println(usage.PartOfSpeech)
                 default:
                     fmt.Println("Some other type", v)
                 }
@@ -39,9 +41,11 @@ func PrintJSON(json map[string]interface{}) {
             }
             fmt.Println("]\n")
         default:
-            fmt.Println(key, "is some other type", typ)
+            fmt.Println(key, "is some other type")
         }
+        usages = append(usages, usage)
     }
+    return
 }
 
 func main() {
@@ -64,5 +68,6 @@ func main() {
 
     entries := result.(map[string]interface{})
 
-    PrintJSON(entries)
+    usages := ParseUsages(entries)
+    fmt.Println(usages[0].PartOfSpeech)
 }
