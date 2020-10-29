@@ -116,8 +116,16 @@ func main() {
         fmt.Println(usage.Lang)
         fmt.Println("Part of Speech:", usage.PartOfSpeech)
         fmt.Println("Definitions:")
-        for _, definition := range usage.Definitions {
-            fmt.Println(definition)
+        for i, definition := range usage.Definitions {
+            fmt.Print(i + 1, ". ")
+            fmt.Println(definition.Def)
+            if definition.Examples != nil {
+                fmt.Println("Examples")
+                for _, example := range definition.Examples {
+                    fmt.Print("- ")
+                    fmt.Println(example)
+                }
+            }
         }
         fmt.Println()
     }
