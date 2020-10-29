@@ -27,7 +27,15 @@ func ParseDefinitions(json []interface{}) (definitions []Definition) {
         case map[string]interface{}:
             definition.Def = typ["definition"].(string)
             if typ["examples"] != nil {
-                definition.Examples = typ["examples"].([]string)
+                fmt.Println(typ["examples"])
+                switch ex := typ["examples"].(type) {
+                case []interface{}:
+                    for _, s := range ex {
+                        definition.Examples = append(definition.Examples, s.(string))
+                    }
+                default:
+                    fmt.Println("Error: some other typ")
+                }
             }
         default:
             fmt.Println("Some other type", value)
@@ -48,7 +56,6 @@ func ParseUsages(json map[string]interface{}) (usages []Usage) {
                     usage.PartOfSpeech = v["partOfSpeech"].(string)
                     usage.Lang = v["language"].(string)
                     usage.Definitions = ParseDefinitions(v["definitions"].([]interface{}))
-                    fmt.Println(usage.PartOfSpeech)
                 default:
                     fmt.Println("Some other type", v)
                 }
@@ -62,7 +69,7 @@ func ParseUsages(json map[string]interface{}) (usages []Usage) {
 }
 
 func main() {
-    response, err := http.Get("https://en.wiktionary.org/api/rest_v1/page/definition/général")
+    response, err := http.Get("https://en.wiktionary.org/api/rest_v1/page/definition/je")
 
     if err != nil {
         fmt.Print(err.Error())
@@ -79,8 +86,10 @@ func main() {
 
     err = json.Unmarshal([]byte(responseData), &result)
 
-    entries := result.(map[string]interface{})
+    parsedResponse := result.(map[string]interface{})
 
-    usages := ParseUsages(entries)
-    fmt.Println(usages[0].PartOfSpeech)
+    usages := ParseUsages(parsedResponse)
+    for _, usage := range usages {
+        fmt.Println(usage, "\n")
+    }
 }
