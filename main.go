@@ -92,10 +92,10 @@ func ParseUsages(json map[string]interface{}) (usages []Usage) {
 }
 
 func main() {
-    if len(os.Args) == 1 {
-        panic("You must be looking for some word")
-    }
-    word := os.Args[1]
+	if len(os.Args) == 1 {
+	    panic("You must be looking for some word")
+	}
+	word := os.Args[1]
 	response, err := http.Get("https://en.wiktionary.org/api/rest_v1/page/definition/" + word)
 
 	if err != nil {
