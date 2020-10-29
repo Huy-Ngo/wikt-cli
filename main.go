@@ -3,10 +3,12 @@ package main
 import (
     "encoding/json"
     "fmt"
+    "golang.org/x/net/html"
     "io/ioutil"
     "log"
     "net/http"
     "os"
+    "strings"
 )
 
 type Usage struct {
@@ -20,18 +22,39 @@ type Definition struct {
     Examples []string `json:"examples"`
 }
 
+func ParseHTML(htmlText string) (string) {
+    doc, err := html.Parse(strings.NewReader(htmlText))
+    if err != nil {
+        log.Fatal(err)
+    }
+    return parseHTML(doc)
+}
+
+func parseHTML(n *html.Node) (string) {
+    if n.Type == html.TextNode {
+        return n.Data
+    } else {
+        plain := ""
+        for c := n.FirstChild; c!= nil; c = c.NextSibling {
+            plain += parseHTML(c)
+        }
+        return plain
+    }
+}
+
 func ParseDefinitions(json []interface{}) (definitions []Definition) {
     for _, value := range json {
         var definition Definition
         switch typ := value.(type) {
         case map[string]interface{}:
-            definition.Def = typ["definition"].(string)
+            plain_def := ParseHTML(typ["definition"].(string))
+            definition.Def = plain_def
             if typ["examples"] != nil {
-                fmt.Println(typ["examples"])
                 switch ex := typ["examples"].(type) {
                 case []interface{}:
                     for _, s := range ex {
-                        definition.Examples = append(definition.Examples, s.(string))
+                        plain_example := ParseHTML(s.(string))
+                        definition.Examples = append(definition.Examples, plain_example)
                     }
                 default:
                     fmt.Println("Error: some other typ")
@@ -69,7 +92,7 @@ func ParseUsages(json map[string]interface{}) (usages []Usage) {
 }
 
 func main() {
-    response, err := http.Get("https://en.wiktionary.org/api/rest_v1/page/definition/je")
+    response, err := http.Get("https://en.wiktionary.org/api/rest_v1/page/definition/encore")
 
     if err != nil {
         fmt.Print(err.Error())
@@ -90,6 +113,12 @@ func main() {
 
     usages := ParseUsages(parsedResponse)
     for _, usage := range usages {
-        fmt.Println(usage, "\n")
+        fmt.Println(usage.Lang)
+        fmt.Println("Part of Speech:", usage.PartOfSpeech)
+        fmt.Println("Definitions:")
+        for _, definition := range usage.Definitions {
+            fmt.Println(definition)
+        }
+        fmt.Println()
     }
 }
