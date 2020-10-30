@@ -114,7 +114,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	langPtr := flag.String("lang", "*", "code for the language you want to search")
+	langPtr := flag.String("lang", "*", "2-letter code for the language you want to search, use \"*\" to include all language")
 	flag.Parse()
 
 
