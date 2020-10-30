@@ -116,6 +116,11 @@ func main() {
 
 	parsedResponse := result.(map[string]interface{})
 
+	if parsedResponse["title"] == "Not found." {
+		fmt.Println("That word does not exist.")
+		os.Exit(0)
+	}
+
 	usages := ParseUsages(parsedResponse)
 	for _, usage := range usages {
 		fmt.Println(usage.Lang)
