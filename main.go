@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"golang.org/x/net/html"
 	"io/ioutil"
@@ -11,50 +12,57 @@ import (
 	"strings"
 )
 
+// Usage is a struct storing the information for each usage in a Wiktionary entry.
+// Each word can have several usages in the same or different languages.
 type Usage struct {
+	// Part of speech of the word, e.g. Noun, Adjective, Interjection
 	PartOfSpeech string `json:"partOfSpeech"`
+	// Language for this usage
 	Lang string `json::"language"`
+	// List of definitions for this usage
 	Definitions []Definition `json:"definitions"`
 }
 
+// Definition is a struct storing information of a definition of a word usage
 type Definition struct {
+	// The definition
 	Def string `json:"definition"`
+	// The examples for this definition
 	Examples []string `json:"examples"`
 }
 
-func ParseHTML(htmlText string) (string) {
+func parseHTML(htmlText string) (string) {
 	doc, err := html.Parse(strings.NewReader(htmlText))
 	if err != nil {
 		log.Fatal(err)
 	}
-	return parseHTML(doc)
+	return parseDocTree(doc)
 }
 
-func parseHTML(n *html.Node) (string) {
+func parseDocTree(n *html.Node) (string) {
 	if n.Type == html.TextNode {
 		return n.Data
-	} else {
-		plain := ""
-		for c := n.FirstChild; c!= nil; c = c.NextSibling {
-			plain += parseHTML(c)
-		}
-		return plain
 	}
+	plain := ""
+	for c := n.FirstChild; c!= nil; c = c.NextSibling {
+		plain += parseDocTree(c)
+	}
+	return plain
 }
 
-func ParseDefinitions(json []interface{}) (definitions []Definition) {
+func parseDefinitions(json []interface{}) (definitions []Definition) {
 	for _, value := range json {
 		var definition Definition
 		switch typ := value.(type) {
 		case map[string]interface{}:
-			plain_def := ParseHTML(typ["definition"].(string))
-			definition.Def = plain_def
+			plainDef := parseHTML(typ["definition"].(string))
+			definition.Def = plainDef
 			if typ["examples"] != nil {
 				switch ex := typ["examples"].(type) {
 				case []interface{}:
 					for _, s := range ex {
-						plain_example := ParseHTML(s.(string))
-						definition.Examples = append(definition.Examples, plain_example)
+						plainExample := parseHTML(s.(string))
+						definition.Examples = append(definition.Examples, plainExample)
 					}
 				default:
 					fmt.Println("Error: some other typ")
@@ -68,7 +76,7 @@ func ParseDefinitions(json []interface{}) (definitions []Definition) {
 	return
 }
 
-func ParseUsages(json map[string]interface{}) (usages []Usage) {
+func parseUsages(json map[string]interface{}) (usages []Usage) {
 	for key, value := range json {
 		var usage Usage
 		switch typ := value.(type) {
@@ -78,7 +86,7 @@ func ParseUsages(json map[string]interface{}) (usages []Usage) {
 				case map[string]interface{}:
 					usage.PartOfSpeech = v["partOfSpeech"].(string)
 					usage.Lang = v["language"].(string)
-					usage.Definitions = ParseDefinitions(v["definitions"].([]interface{}))
+					usage.Definitions = parseDefinitions(v["definitions"].([]interface{}))
 				default:
 					fmt.Println("Some other type", v)
 				}
@@ -103,6 +111,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	langPtr := flag.String("lang", nil, "code for the language you want to search")
+	flag.Parse()
+
 
 	responseData, err := ioutil.ReadAll(response.Body)
 
@@ -121,7 +132,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	usages := ParseUsages(parsedResponse)
+	usages := parseUsages(parsedResponse)
 	for _, usage := range usages {
 		fmt.Println(usage.Lang)
 		fmt.Println("Part of Speech:", usage.PartOfSpeech)
