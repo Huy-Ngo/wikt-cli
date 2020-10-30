@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"golang.org/x/net/html"
 	"io/ioutil"
@@ -75,8 +76,11 @@ func parseDefinitions(json []interface{}) (definitions []Definition) {
 	return
 }
 
-func parseUsages(json map[string]interface{}) (usages []Usage) {
+func parseUsages(json map[string]interface{}, language string) (usages []Usage) {
 	for key, value := range json {
+		if language != "*" && key != language {
+			continue
+		}
 		var usage Usage
 		switch typ := value.(type) {
 		case []interface{}:
@@ -110,6 +114,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	langPtr := flag.String("lang", "*", "2-letter code for the language you want to search, use \"*\" to include all language")
+	flag.Parse()
+
 
 	responseData, err := ioutil.ReadAll(response.Body)
 
@@ -128,7 +135,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	usages := parseUsages(parsedResponse)
+	usages := parseUsages(parsedResponse, *langPtr)
 	for _, usage := range usages {
 		fmt.Println(usage.Lang)
 		fmt.Println("Part of Speech:", usage.PartOfSpeech)
