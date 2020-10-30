@@ -76,8 +76,11 @@ func parseDefinitions(json []interface{}) (definitions []Definition) {
 	return
 }
 
-func parseUsages(json map[string]interface{}) (usages []Usage) {
+func parseUsages(json map[string]interface{}, language string) (usages []Usage) {
 	for key, value := range json {
+		if language != "*" && key != language {
+			continue
+		}
 		var usage Usage
 		switch typ := value.(type) {
 		case []interface{}:
@@ -111,7 +114,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	langPtr := flag.String("lang", nil, "code for the language you want to search")
+	langPtr := flag.String("lang", "*", "code for the language you want to search")
 	flag.Parse()
 
 
@@ -132,7 +135,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	usages := parseUsages(parsedResponse)
+	usages := parseUsages(parsedResponse, *langPtr)
 	for _, usage := range usages {
 		fmt.Println(usage.Lang)
 		fmt.Println("Part of Speech:", usage.PartOfSpeech)
