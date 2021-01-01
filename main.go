@@ -103,10 +103,11 @@ func parseUsages(json map[string]interface{}, language string) (usages []Usage) 
 }
 
 func main() {
-	if len(os.Args) == 1 {
-	    panic("You must be looking for some word")
-	}
-	word := os.Args[1]
+	langPtr := flag.String("l", "*", "2-letter code for the language you want to search, use \"*\" to include all language")
+	wordPtr := flag.String("w", "default", "The word you want to look up")
+	flag.Parse()
+	word := *wordPtr
+	fmt.Println("Definition for", word)
 	response, err := http.Get("https://en.wiktionary.org/api/rest_v1/page/definition/" + word)
 
 	if err != nil {
@@ -114,8 +115,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	langPtr := flag.String("lang", "*", "2-letter code for the language you want to search, use \"*\" to include all language")
-	flag.Parse()
 
 
 	responseData, err := ioutil.ReadAll(response.Body)
