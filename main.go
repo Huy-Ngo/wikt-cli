@@ -102,12 +102,24 @@ func parseUsages(json map[string]interface{}, language string) (usages []Usage) 
 	return
 }
 
+func makeGreen(text string) (string) {
+	return "\033[32m" + text + "\033[0m"
+}
+
+func makeRed(text string) (string) {
+	return "\033[31m" + text + "\033[0m"
+}
+
+func makeBlue(text string) (string) {
+	return "\033[34m" + text + "\033[0m"
+}
+
 func main() {
 	langPtr := flag.String("l", "en", "2-letter code for the language you want to search,\nuse \"*\" to include all language")
 	wordPtr := flag.String("w", "default", "The word you want to look up")
 	flag.Parse()
 	word := *wordPtr
-	fmt.Println("Definition for", word)
+	fmt.Println("Definition for", makeGreen(word))
 	response, err := http.Get("https://en.wiktionary.org/api/rest_v1/page/definition/" + word)
 
 	if err != nil {
@@ -141,8 +153,8 @@ func main() {
 			fmt.Println(usage.Lang)
 			currentLang = usage.Lang
 		}
-		fmt.Println("\tPart of Speech:", usage.PartOfSpeech)
-		fmt.Println("\tDefinitions:")
+		fmt.Println("\tPart of Speech:", makeRed(usage.PartOfSpeech))
+		fmt.Println(makeBlue("\tDefinitions:"))
 		for i, definition := range usage.Definitions {
 			fmt.Print("\t", i + 1, ". ")
 			fmt.Println(definition.Def)
