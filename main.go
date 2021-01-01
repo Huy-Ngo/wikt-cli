@@ -90,6 +90,7 @@ func parseUsages(json map[string]interface{}, language string) (usages []Usage) 
 					usage.PartOfSpeech = v["partOfSpeech"].(string)
 					usage.Lang = v["language"].(string)
 					usage.Definitions = parseDefinitions(v["definitions"].([]interface{}))
+					usages = append(usages, usage)
 				default:
 					fmt.Println("Some other type", v)
 				}
@@ -97,13 +98,12 @@ func parseUsages(json map[string]interface{}, language string) (usages []Usage) 
 		default:
 			fmt.Println(key, "is some other type")
 		}
-		usages = append(usages, usage)
 	}
 	return
 }
 
 func main() {
-	langPtr := flag.String("l", "*", "2-letter code for the language you want to search, use \"*\" to include all language")
+	langPtr := flag.String("l", "en", "2-letter code for the language you want to search,\nuse \"*\" to include all language")
 	wordPtr := flag.String("w", "default", "The word you want to look up")
 	flag.Parse()
 	word := *wordPtr
@@ -135,17 +135,21 @@ func main() {
 	}
 
 	usages := parseUsages(parsedResponse, *langPtr)
+	var currentLang string
 	for _, usage := range usages {
-		fmt.Println(usage.Lang)
-		fmt.Println("Part of Speech:", usage.PartOfSpeech)
-		fmt.Println("Definitions:")
+		if currentLang != usage.Lang {
+			fmt.Println(usage.Lang)
+			currentLang = usage.Lang
+		}
+		fmt.Println("\tPart of Speech:", usage.PartOfSpeech)
+		fmt.Println("\tDefinitions:")
 		for i, definition := range usage.Definitions {
-			fmt.Print(i + 1, ". ")
+			fmt.Print("\t", i + 1, ". ")
 			fmt.Println(definition.Def)
 			if definition.Examples != nil {
-				fmt.Println("Examples")
+				fmt.Println("\t", "Examples")
 				for _, example := range definition.Examples {
-					fmt.Print("- ")
+					fmt.Print("\t", "- ")
 					fmt.Println(example)
 				}
 			}
