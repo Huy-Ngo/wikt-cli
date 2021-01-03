@@ -116,7 +116,7 @@ func makeBlue(text string) (string) {
 
 func main() {
 	langPtr := flag.String("l", "en", "2-letter code for the language you want to search,\nuse \"*\" to include all language")
-	wordPtr := flag.String("w", "default", "The word you want to look up")
+	wordPtr := flag.String("w", os.Args[1], "The word you want to look up")
 	flag.Parse()
 	word := *wordPtr
 	fmt.Println("Definition for", makeGreen(word))
