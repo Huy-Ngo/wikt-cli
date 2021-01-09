@@ -78,7 +78,7 @@ func parseDefinitions(json []interface{}) (definitions []Definition) {
 
 func parseUsages(json map[string]interface{}, language string) (usages []Usage) {
 	for key, value := range json {
-		if language != "*" && key != language {
+		if language != "all" && key != language {
 			continue
 		}
 		var usage Usage
@@ -115,7 +115,7 @@ func makeBlue(text string) (string) {
 }
 
 func main() {
-	langPtr := flag.String("l", "en", "2-letter code for the language you want to search,\nuse \"*\" to include all language")
+	langPtr := flag.String("l", "all", "2-letter code for the language you want to search,\nuse \"all\" to include all language")
 	wordPtr := flag.String("w", os.Args[1], "The word you want to look up")
 	flag.Parse()
 	word := *wordPtr
