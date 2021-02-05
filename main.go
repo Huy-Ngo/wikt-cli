@@ -31,7 +31,7 @@ type Definition struct {
 	Examples []string `json:"examples"`
 }
 
-func parseHTML(htmlText string) (string) {
+func parseHTML(htmlText string) string {
 	doc, err := html.Parse(strings.NewReader(htmlText))
 	if err != nil {
 		log.Fatal(err)
@@ -39,12 +39,12 @@ func parseHTML(htmlText string) (string) {
 	return parseDocTree(doc)
 }
 
-func parseDocTree(n *html.Node) (string) {
+func parseDocTree(n *html.Node) string {
 	if n.Type == html.TextNode {
 		return n.Data
 	}
 	plain := ""
-	for c := n.FirstChild; c!= nil; c = c.NextSibling {
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		plain += parseDocTree(c)
 	}
 	return plain
@@ -102,15 +102,15 @@ func parseUsages(json map[string]interface{}, language string) (usages []Usage) 
 	return
 }
 
-func makeGreen(text string) (string) {
+func makeGreen(text string) string {
 	return "\033[32m" + text + "\033[0m"
 }
 
-func makeRed(text string) (string) {
+func makeRed(text string) string {
 	return "\033[31m" + text + "\033[0m"
 }
 
-func makeBlue(text string) (string) {
+func makeBlue(text string) string {
 	return "\033[34m" + text + "\033[0m"
 }
 
@@ -126,8 +126,6 @@ func main() {
 		fmt.Print(err.Error())
 		os.Exit(1)
 	}
-
-
 
 	responseData, err := ioutil.ReadAll(response.Body)
 
@@ -156,7 +154,7 @@ func main() {
 		fmt.Println("\tPart of Speech:", makeRed(usage.PartOfSpeech))
 		fmt.Println(makeBlue("\tDefinitions:"))
 		for i, definition := range usage.Definitions {
-			fmt.Print("\t", i + 1, ". ")
+			fmt.Print("\t", i+1, ". ")
 			fmt.Println(definition.Def)
 			if definition.Examples != nil {
 				fmt.Println("\t", "Examples")
